@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MMA – Gestión de Peleadores</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+<div class="container py-4">
+  <h2 class="mb-3">Peleadores</h2>
+  <p class="text-secondary mb-4">
+    Usa el formulario para <strong>crear o editar</strong> peleadores y la tabla para <strong>eliminar</strong>.
+  </p>
+
+  <div class="row g-4">
+    <!-- FORM -->
+    <div class="col-md-4">
+      <div class="card bg-secondary-subtle text-dark">
+        <div class="card-body">
+          <h5 class="card-title" id="formTitle">Nuevo peleador</h5>
+          <form id="formFighter" autocomplete="off">
+            <input type="hidden" id="fighterId">
+
+            <div class="mb-2">
+              <label class="form-label mb-0" for="firstName">Nombre</label>
+              <input class="form-control" id="firstName" required>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label mb-0" for="lastName">Apellido</label>
+              <input class="form-control" id="lastName" required>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label mb-0" for="club">Club</label>
+              <input class="form-control" id="club">
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label mb-0" for="categoryWeight">Categoría de peso</label>
+              <select class="form-select" id="categoryWeight" required>
+                <option value="" disabled selected>Seleccione una categoría</option>
+                <option>Featherweight</option>
+                <option>Lightweight</option>
+                <option>Welterweight</option>
+                <option>Middleweight</option>
+                <option>Heavyweight</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label mb-0" for="status">Estado</label>
+              <select class="form-select" id="status">
+                <option>Active</option>
+                <option>Injured</option>
+                <option>Suspended</option>
+                <option>Retired</option>
+              </select>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary flex-fill" id="btnSave">Guardar</button>
+              <button type="button" class="btn btn-outline-light d-none" id="btnCancelEdit">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="col-md-8">
+      <div class="card bg-body-tertiary text-dark">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title mb-0">Listado de peleadores</h5>
+            <button class="btn btn-sm btn-outline-secondary" id="btnReload">Recargar</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover align-middle mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Club</th>
+                  <th>Categoría</th>
+                  <th>W-L-D</th>
+                  <th>Estado</th>
+                  <th style="width: 130px;"></th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="7" class="text-center">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ⚠️ Para Live Server usamos URL completa al backend Spring Boot
+const API_BASE = 'http://localhost:8081/api/fighters';
+
+const tbody        = document.getElementById('tbody');
+const form         = document.getElementById('formFighter');
+const fighterId    = document.getElementById('fighterId');
+const firstName    = document.getElementById('firstName');
+const lastName     = document.getElementById('lastName');
+const club         = document.getElementById('club');
+const categoryW    = document.getElementById('categoryWeight');
+const statusSel    = document.getElementById('status');
+const formTitle    = document.getElementById('formTitle');
+const btnCancel    = document.getElementById('btnCancelEdit');
+const btnReload    = document.getElementById('btnReload');
+
+async function loadFighters() {
+  try {
+    const res = await fetch(API_BASE);
+    if (!res.ok) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar: ' + res.status + '</td></tr>';
+      return;
+    }
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay peleadores registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(f => `
+      <tr>
+        <td>${f.id}</td>
+        <td>${f.firstName} ${f.lastName}</td>
+        <td>${f.club ?? ''}</td>
+        <td>${f.categoryWeight}</td>
+        <td>${f.recordW ?? 0}-${f.recordL ?? 0}-${f.recordD ?? 0}</td>
+        <td>${f.status ?? ''}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" onclick="editFighter(${f.id})">Editar</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteFighter(${f.id})">Eliminar</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error de red al cargar peleadores.</td></tr>';
+  }
+}
+
+async function getFighter(id) {
+  const res = await fetch(`${API_BASE}/${id}`);
+  if (!res.ok) throw new Error('No se pudo obtener el peleador');
+  return await res.json();
+}
+
+window.editFighter = async function(id) {
+  try {
+    const f = await getFighter(id);
+    fighterId.value   = f.id;
+    firstName.value   = f.firstName ?? '';
+    lastName.value    = f.lastName ?? '';
+    club.value        = f.club ?? '';
+    categoryW.value   = f.categoryWeight ?? '';
+    statusSel.value   = f.status ?? 'Active';
+    formTitle.textContent = 'Editar peleador #' + f.id;
+    btnCancel.classList.remove('d-none');
+  } catch (err) {
+    alert('No se pudo cargar el peleador: ' + err.message);
+  }
+};
+
+window.deleteFighter = async function(id) {
+  if (!confirm('¿Seguro que deseas eliminar al peleador #' + id + '?')) return;
+  try {
+    const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const txt = await res.text();
+      alert('Error al eliminar (' + res.status + '): ' + txt);
+      return;
+    }
+    await loadFighters();
+  } catch (err) {
+    alert('Error de red al eliminar: ' + err.message);
+  }
+};
+
+function resetForm() {
+  fighterId.value = '';
+  form.reset();
+  categoryW.selectedIndex = 0;
+  statusSel.value = 'Active';
+  formTitle.textContent = 'Nuevo peleador';
+  btnCancel.classList.add('d-none');
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const isEdit = !!fighterId.value;
+  const body = {
+    firstName: firstName.value.trim(),
+    lastName: lastName.value.trim(),
+    club: club.value.trim(),
+    categoryWeight: categoryW.value,
+    status: statusSel.value
+  };
+
+  const url = isEdit ? `${API_BASE}/${fighterId.value}` : API_BASE;
+  const method = isEdit ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const txt = await res.text();
+    if (!res.ok) {
+      alert('Error ' + res.status + '\n' + txt);
+      return;
+    }
+
+    resetForm();
+    await loadFighters();
+  } catch (err) {
+    alert('Error de red al guardar: ' + err.message);
+  }
+});
+
+btnCancel.addEventListener('click', resetForm);
+btnReload.addEventListener('click', loadFighters);
+
+loadFighters();
+</script>
+</body>
+</html>
