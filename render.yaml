@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mma-live-system
+    env: java
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -jar target/mma-demo-live-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+
