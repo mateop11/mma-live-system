@@ -264,8 +264,17 @@
 
 <script>
 // URLs dinámicas - detecta automáticamente el host
-const FIGHT_API   = window.location.origin + '/api/fights';
-const FIGHTER_API = window.location.origin + '/api/fighters';
+const FIGHT_API   = window.location.origin + '/api/public/bouts';
+const FIGHTER_API = window.location.origin + '/api/public/fighters';
+const ADMIN_API   = window.location.origin + '/api/admin';
+const token = localStorage.getItem('mma_token');
+
+function getAuthHeaders() {
+    return token ? { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+    } : { 'Content-Type': 'application/json' };
+}
 
 let fighters = [];
 
@@ -375,9 +384,17 @@ window.editFight = async function(id) {
 };
 
 window.deleteFight = async function(id) {
+  if (!token) {
+    alert('Debes iniciar sesión para eliminar peleas');
+    window.location.href = '/login.html';
+    return;
+  }
   if (!confirm('¿Seguro que deseas eliminar la pelea #' + id + '?')) return;
   try {
-    const res = await fetch(`${FIGHT_API}/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${ADMIN_API}/bouts/${id}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!res.ok) {
       const txt = await res.text();
       alert('Error al eliminar (' + res.status + '): ' + txt);
@@ -400,6 +417,13 @@ function resetForm() {
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  
+  if (!token) {
+    alert('Debes iniciar sesión para crear/editar peleas');
+    window.location.href = '/login.html';
+    return;
+  }
+  
   const isEdit = !!fightId.value;
 
   if (!fighter1.value || !fighter2.value) {
@@ -419,13 +443,13 @@ form.addEventListener('submit', async (e) => {
     status: statusSel.value
   };
 
-  const url = isEdit ? `${FIGHT_API}/${fightId.value}` : FIGHT_API;
+  const url = isEdit ? `${ADMIN_API}/bouts/${fightId.value}` : `${ADMIN_API}/bouts`;
   const method = isEdit ? 'PUT' : 'POST';
 
   try {
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(body)
     });
     const txt = await res.text();
