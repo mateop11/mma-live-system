@@ -20,8 +20,11 @@
         .card { background: linear-gradient(180deg, #1f2937 0%, #111827 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; }
         .fighter-card { transition: transform 0.3s; cursor: pointer; }
         .fighter-card:hover { transform: translateY(-5px); }
-        .fighter-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; }
+        .fighter-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; color: #ffffff; }
+        .fighter-club { color: #9ca3af !important; }
         .record { font-size: 1.5rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
+        .bout-fighter { color: #ffffff; font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; }
+        .bout-rounds { color: #9ca3af; }
         .record-w { color: #10b981; }
         .record-l { color: #ef4444; }
         .record-d { color: #6b7280; }
@@ -78,7 +81,7 @@
                             <span class="badge ${f.status === 'Active' ? 'bg-success' : 'bg-secondary'}">${f.status || 'Active'}</span>
                         </div>
                         <h5 class="fighter-name">${f.firstName} ${f.lastName}</h5>
-                        <div class="text-muted small mb-2">${f.club || 'Sin club'}</div>
+                        <div class="fighter-club small mb-2">${f.club || 'Sin club'}</div>
                         <div class="record">
                             <span class="record-w">${f.recordW || 0}</span>-<span class="record-l">${f.recordL || 0}</span>-<span class="record-d">${f.recordD || 0}</span>
                         </div>
@@ -100,12 +103,12 @@
                         <div class="card bout-card live p-4">
                             <div class="d-flex justify-content-between mb-3">
                                 <span class="live-badge">🔴 EN VIVO</span>
-                                <span>Round ${b.currentRound || 1}/${b.totalRounds || 3}</span>
+                                <span class="bout-rounds">Round ${b.currentRound || 1}/${b.totalRounds || 3}</span>
                             </div>
                             <div class="text-center">
-                                <h4>${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</h4>
+                                <h4 class="bout-fighter">${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</h4>
                                 <span class="vs-badge my-2">VS</span>
-                                <h4>${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</h4>
+                                <h4 class="bout-fighter">${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</h4>
                             </div>
                         </div>
                     </div>
@@ -117,10 +120,10 @@
                     <div class="col-md-6">
                         <div class="card bout-card p-4">
                             <div class="text-center">
-                                <h5>${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</h5>
+                                <h5 class="bout-fighter">${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</h5>
                                 <span class="vs-badge my-2">VS</span>
-                                <h5>${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</h5>
-                                <div class="mt-2 text-muted">${b.totalRounds || 3} Rounds</div>
+                                <h5 class="bout-fighter">${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</h5>
+                                <div class="mt-2 bout-rounds">${b.totalRounds || 3} Rounds</div>
                             </div>
                         </div>
                     </div>
