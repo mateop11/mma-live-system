@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMA Live - Gestión de Peleas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --mma-red: #dc2626; --mma-dark: #0f0f0f; --mma-gold: #fbbf24; }
+        body { background: linear-gradient(135deg, var(--mma-dark) 0%, #1a1a2e 50%, #16213e 100%); min-height: 100vh; font-family: 'Oswald', sans-serif; color: #f3f4f6; }
+        .navbar { background: rgba(0,0,0,0.8) !important; backdrop-filter: blur(10px); border-bottom: 2px solid var(--mma-gold); }
+        .navbar-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; }
+        .navbar-brand span:first-child { color: #fff; }
+        .navbar-brand span:last-child { color: var(--mma-red); }
+        .nav-link { color: #9ca3af !important; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+        .nav-link:hover, .nav-link.active { color: var(--mma-gold) !important; }
+        .main-content { padding: 2rem 0; }
+        .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; margin-bottom: 1.5rem; }
+        .card { background: linear-gradient(180deg, #1f2937 0%, #111827 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; }
+        .card-title { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--mma-gold); }
+        .table { color: #e5e7eb; }
+        .table thead { background: linear-gradient(90deg, var(--mma-gold) 0%, #d97706 100%); }
+        .table thead th { border: none; color: #000; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+        .form-control, .form-select { background: #374151; border: 1px solid #4b5563; color: #f9fafb; border-radius: 8px; }
+        .form-control:focus, .form-select:focus { background: #4b5563; border-color: var(--mma-gold); color: #fff; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2); }
+        .form-label { color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-primary { background: linear-gradient(90deg, var(--mma-gold) 0%, #d97706 100%); border: none; color: #000; font-weight: 600; }
+        .btn-primary:hover { background: linear-gradient(90deg, #fcd34d 0%, var(--mma-gold) 100%); color: #000; }
+        .btn-success { background: #10b981; border: none; }
+        .btn-warning { background: #f59e0b; border: none; color: #000; }
+        .btn-danger { background: #ef4444; border: none; }
+        .badge-programada { background: #3b82f6; }
+        .badge-encurso { background: #f59e0b; animation: pulse 1.5s infinite; }
+        .badge-pausada { background: #6b7280; }
+        .badge-finalizada { background: #10b981; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .vs-badge { background: var(--mma-red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-role { background: var(--mma-red); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+        .btn-logout { background: transparent; border: 1px solid #6b7280; color: #9ca3af; padding: 6px 16px; border-radius: 6px; }
+        .btn-logout:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><span>MMA</span><span>LIVE</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/ui/dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/fighters.html">Peleadores</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ui/bouts.html">Peleas</a></li>
+                </ul>
+                <div class="user-info">
+                    <span id="userName">Usuario</span>
+                    <span class="user-role" id="userRole">ROL</span>
+                    <button class="btn btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <h1 class="section-title">⚔️ Gestión de Peleas</h1>
+            
+            <div class="row g-4">
+                <!-- Form -->
+                <div class="col-lg-4 admin-section">
+                    <div class="card p-4">
+                        <h5 class="card-title mb-3" id="formTitle">Nueva Pelea</h5>
+                        <form id="boutForm">
+                            <input type="hidden" id="boutId">
+                            <div class="mb-3">
+                                <label class="form-label">Peleador 1</label>
+                                <select class="form-select" id="fighter1" required></select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Peleador 2</label>
+                                <select class="form-select" id="fighter2" required></select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Rounds</label>
+                                <input type="number" class="form-control" id="rounds" min="1" max="5" value="3">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">Guardar</button>
+                                <button type="button" class="btn btn-outline-light d-none" id="btnCancel" onclick="resetForm()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Table -->
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Listado de Peleas</h5>
+                            <button class="btn btn-sm btn-outline-light" onclick="loadBouts()">🔄 Recargar</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Pelea</th>
+                                        <th>Rounds</th>
+                                        <th>Estado</th>
+                                        <th>Ganador</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="boutsTable">
+                                    <tr><td colspan="6" class="text-center">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        let token = localStorage.getItem('mma_token');
+        let currentUser = JSON.parse(localStorage.getItem('mma_user') || '{}');
+        let fighters = [];
+        
+        if (!token) window.location.href = '/login.html';
+        
+        document.getElementById('userName').textContent = currentUser.fullName || 'Usuario';
+        document.getElementById('userRole').textContent = currentUser.role || 'ROL';
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        function getStateBadge(state) {
+            const badges = {
+                'Programada': '<span class="badge badge-programada">Programada</span>',
+                'EnCurso': '<span class="badge badge-encurso">🔴 EN VIVO</span>',
+                'Pausada': '<span class="badge badge-pausada">Pausada</span>',
+                'Finalizada': '<span class="badge badge-finalizada">Finalizada</span>'
+            };
+            return badges[state] || state;
+        }
+        
+        async function loadFighters() {
+            const res = await fetch(`${API_BASE}/api/public/fighters`);
+            fighters = await res.json();
+            const opts = fighters.map(f => `<option value="${f.id}">${f.firstName} ${f.lastName} (${f.recordW || 0}-${f.recordL || 0})</option>`).join('');
+            document.getElementById('fighter1').innerHTML = '<option value="">Seleccionar...</option>' + opts;
+            document.getElementById('fighter2').innerHTML = '<option value="">Seleccionar...</option>' + opts;
+        }
+        
+        async function loadBouts() {
+            const res = await fetch(`${API_BASE}/api/public/bouts`);
+            const bouts = await res.json();
+            
+            if (bouts.length === 0) {
+                document.getElementById('boutsTable').innerHTML = '<tr><td colspan="6" class="text-center">No hay peleas registradas</td></tr>';
+                return;
+            }
+            
+            document.getElementById('boutsTable').innerHTML = bouts.map(b => `
+                <tr>
+                    <td>#${b.id}</td>
+                    <td>
+                        <strong>${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</strong>
+                        <span class="vs-badge mx-1">VS</span>
+                        <strong>${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</strong>
+                    </td>
+                    <td>${b.currentRound || 0}/${b.totalRounds || 3}</td>
+                    <td>${getStateBadge(b.state)}</td>
+                    <td>${b.winner ? `🏆 ${b.winner.firstName} ${b.winner.lastName}` : '-'}</td>
+                    <td>
+                        <a href="/ui/bout-control.html?id=${b.id}" class="btn btn-sm btn-info me-1" title="Control con Cronómetro">⏱️</a>
+                        ${b.state === 'Programada' ? `<button class="btn btn-sm btn-success" onclick="startBout(${b.id})">▶️</button>` : ''}
+                        ${b.state === 'EnCurso' ? `
+                            <button class="btn btn-sm btn-warning" onclick="pauseBout(${b.id})">⏸️</button>
+                            <button class="btn btn-sm btn-danger" onclick="showFinishModal(${b.id})">🏁</button>
+                        ` : ''}
+                        ${b.state === 'Pausada' ? `<button class="btn btn-sm btn-success" onclick="resumeBout(${b.id})">▶️</button>` : ''}
+                        ${currentUser.role === 'ADMIN' ? `<button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteBout(${b.id})">🗑️</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function startBout(id) {
+            await fetch(`${API_BASE}/api/judge/bouts/${id}/start`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadBouts();
+        }
+        
+        async function pauseBout(id) {
+            await fetch(`${API_BASE}/api/judge/bouts/${id}/pause`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadBouts();
+        }
+        
+        async function resumeBout(id) {
+            await fetch(`${API_BASE}/api/judge/bouts/${id}/resume`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadBouts();
+        }
+        
+        async function nextRound(id) {
+            await fetch(`${API_BASE}/api/judge/bouts/${id}/next-round`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadBouts();
+        }
+        
+        function showFinishModal(boutId) {
+            const winnerId = prompt('ID del ganador (dejar vacío para empate):');
+            const method = prompt('Método (Decision, KO, TKO, SUB, DQ):') || 'Decision';
+            finishBout(boutId, winnerId, method);
+        }
+        
+        async function finishBout(id, winnerId, method) {
+            await fetch(`${API_BASE}/api/judge/bouts/${id}/finish`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    winnerId: winnerId || null,
+                    decisionMethod: method
+                })
+            });
+            loadBouts();
+        }
+        
+        async function deleteBout(id) {
+            if (!confirm('¿Eliminar esta pelea?')) return;
+            await fetch(`${API_BASE}/api/admin/bouts/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadBouts();
+        }
+        
+        function resetForm() {
+            document.getElementById('boutForm').reset();
+            document.getElementById('boutId').value = '';
+            document.getElementById('formTitle').textContent = 'Nueva Pelea';
+            document.getElementById('btnCancel').classList.add('d-none');
+        }
+        
+        document.getElementById('boutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fighter1Id = document.getElementById('fighter1').value;
+            const fighter2Id = document.getElementById('fighter2').value;
+            const rounds = document.getElementById('rounds').value;
+            
+            if (fighter1Id === fighter2Id) {
+                alert('Los peleadores deben ser diferentes');
+                return;
+            }
+            
+            await fetch(`${API_BASE}/api/admin/bouts`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fighter1Id, fighter2Id, rounds: parseInt(rounds) })
+            });
+            
+            resetForm();
+            loadBouts();
+        });
+        
+        // Mostrar/ocultar sección admin
+        if (currentUser.role !== 'ADMIN') {
+            document.querySelectorAll('.admin-section').forEach(el => el.style.display = 'none');
+        }
+        
+        loadFighters();
+        loadBouts();
+    </script>
+</body>
+</html>
+

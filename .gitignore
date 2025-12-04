@@ -1,0 +1,25 @@
+# Build
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Blazor client (no necesario para el backend)
+mma-blazor-client/
+mvc-admin/
+
+# Batch files locales
+iniciar-*.bat
+

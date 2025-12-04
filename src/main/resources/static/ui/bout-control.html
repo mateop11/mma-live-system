@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMA Live - Control de Pelea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Digital-7&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Digital';
+            src: url('https://fonts.cdnfonts.com/css/digital-7-mono');
+        }
+        :root { --mma-red: #dc2626; --mma-dark: #0f0f0f; --mma-gold: #fbbf24; --mma-green: #10b981; }
+        body { background: linear-gradient(135deg, var(--mma-dark) 0%, #1a1a2e 50%, #16213e 100%); min-height: 100vh; font-family: 'Oswald', sans-serif; color: #f3f4f6; }
+        
+        .navbar { background: rgba(0,0,0,0.9) !important; border-bottom: 3px solid var(--mma-red); }
+        .navbar-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; }
+        .navbar-brand span:first-child { color: #fff; }
+        .navbar-brand span:last-child { color: var(--mma-red); }
+        
+        .control-container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        
+        /* Timer Display */
+        .timer-card {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--mma-red), var(--mma-gold), var(--mma-red));
+        }
+        
+        .round-display {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            color: var(--mma-gold);
+            margin-bottom: 1rem;
+        }
+        
+        .timer-display {
+            font-family: 'Courier New', monospace;
+            font-size: 8rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255,255,255,0.3);
+            line-height: 1;
+            margin: 1rem 0;
+        }
+        
+        .timer-display.running { color: var(--mma-green); text-shadow: 0 0 40px rgba(16, 185, 129, 0.5); }
+        .timer-display.paused { color: var(--mma-gold); text-shadow: 0 0 40px rgba(251, 191, 36, 0.5); animation: blink 1s infinite; }
+        .timer-display.stopped { color: #6b7280; }
+        .timer-display.warning { color: #f59e0b; animation: pulse-warning 0.5s infinite; }
+        .timer-display.critical { color: var(--mma-red); animation: pulse-critical 0.3s infinite; }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes pulse-warning { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes pulse-critical { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
+        
+        .progress-bar-container {
+            height: 12px;
+            background: #1f2937;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--mma-green), var(--mma-gold));
+            border-radius: 6px;
+            transition: width 1s linear;
+        }
+        
+        .progress-bar-fill.warning { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+        .progress-bar-fill.critical { background: var(--mma-red); }
+        
+        .state-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+        
+        .state-badge.running { background: var(--mma-green); color: #fff; }
+        .state-badge.paused { background: var(--mma-gold); color: #000; }
+        .state-badge.stopped { background: #4b5563; color: #fff; }
+        
+        /* Fighter Cards */
+        .fighters-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        .fighter-card {
+            flex: 1;
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .fighter-card.red { border-left: 4px solid var(--mma-red); }
+        .fighter-card.blue { border-right: 4px solid #3b82f6; }
+        
+        .fighter-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+        
+        .fighter-record {
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+        
+        .vs-badge {
+            background: var(--mma-red);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50%;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+        }
+        
+        /* Control Buttons */
+        .controls-card {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-control {
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1rem;
+            border: none;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+        
+        .btn-start { background: linear-gradient(180deg, var(--mma-green), #059669); color: #fff; }
+        .btn-start:hover { background: linear-gradient(180deg, #34d399, var(--mma-green)); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); }
+        
+        .btn-pause { background: linear-gradient(180deg, var(--mma-gold), #d97706); color: #000; }
+        .btn-pause:hover { background: linear-gradient(180deg, #fcd34d, var(--mma-gold)); transform: translateY(-3px); }
+        
+        .btn-stop { background: linear-gradient(180deg, var(--mma-red), #b91c1c); color: #fff; }
+        .btn-stop:hover { background: linear-gradient(180deg, #ef4444, var(--mma-red)); transform: translateY(-3px); }
+        
+        .btn-next { background: linear-gradient(180deg, #3b82f6, #2563eb); color: #fff; }
+        .btn-next:hover { background: linear-gradient(180deg, #60a5fa, #3b82f6); transform: translateY(-3px); }
+        
+        .btn-finish { background: linear-gradient(180deg, #8b5cf6, #7c3aed); color: #fff; }
+        .btn-finish:hover { background: linear-gradient(180deg, #a78bfa, #8b5cf6); transform: translateY(-3px); }
+        
+        .btn-control:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1f2937;
+            padding: 10px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--mma-green);
+        }
+        
+        .status-dot.disconnected { background: var(--mma-red); }
+        
+        .back-link {
+            color: #9ca3af;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover { color: var(--mma-gold); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><span>MMA</span><span>LIVE</span></a>
+        </div>
+    </nav>
+
+    <div class="control-container">
+        <a href="/ui/bouts.html" class="back-link">← Volver a Peleas</a>
+        
+        <!-- Timer Card -->
+        <div class="timer-card">
+            <span class="state-badge stopped" id="stateBadge">DETENIDO</span>
+            <div class="round-display" id="roundDisplay">ROUND 0 / 0</div>
+            <div class="timer-display stopped" id="timerDisplay">05:00</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBar" style="width: 100%"></div>
+            </div>
+            
+            <!-- Fighters -->
+            <div class="fighters-display">
+                <div class="fighter-card red">
+                    <div class="fighter-name" id="fighter1Name">Cargando...</div>
+                    <div class="fighter-record" id="fighter1Record">0-0-0</div>
+                </div>
+                <div class="vs-badge">VS</div>
+                <div class="fighter-card blue">
+                    <div class="fighter-name" id="fighter2Name">Cargando...</div>
+                    <div class="fighter-record" id="fighter2Record">0-0-0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls-card">
+            <h5 class="text-center mb-4" style="font-family: 'Bebas Neue'; letter-spacing: 2px; color: var(--mma-gold);">CONTROL DE PELEA</h5>
+            
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <button class="btn btn-control btn-start" id="btnStart" onclick="startTimer()">
+                    ▶️ INICIAR
+                </button>
+                <button class="btn btn-control btn-pause" id="btnPause" onclick="pauseTimer()" disabled>
+                    ⏸️ PAUSAR
+                </button>
+                <button class="btn btn-control btn-start" id="btnResume" onclick="resumeTimer()" style="display: none;">
+                    ▶️ REANUDAR
+                </button>
+                <button class="btn btn-control btn-next" id="btnNext" onclick="nextRound()" disabled>
+                    ⏭️ SIG. ROUND
+                </button>
+                <button class="btn btn-control btn-finish" id="btnFinish" onclick="showFinishModal()">
+                    🏁 FINALIZAR
+                </button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-secondary btn-sm" onclick="resetRound()">🔄 Reiniciar Round</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Connection Status -->
+    <div class="connection-status">
+        <span class="status-dot" id="connectionDot"></span>
+        <span id="connectionText">Conectando...</span>
+    </div>
+    
+    <!-- Finish Modal -->
+    <div class="modal fade" id="finishModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">🏁 Finalizar Pelea</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ganador</label>
+                        <select class="form-select bg-secondary text-light border-0" id="winnerId">
+                            <option value="">Empate / Sin ganador</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Método</label>
+                        <select class="form-select bg-secondary text-light border-0" id="decisionMethod">
+                            <option value="Decision">Decisión</option>
+                            <option value="KO">KO</option>
+                            <option value="TKO">TKO</option>
+                            <option value="SUB">Sumisión</option>
+                            <option value="DQ">Descalificación</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="finishBout()">Finalizar Pelea</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        const urlParams = new URLSearchParams(window.location.search);
+        const boutId = urlParams.get('id');
+        
+        if (!boutId) {
+            alert('No se especificó ID de pelea');
+            window.location.href = '/ui/bouts.html';
+        }
+        
+        const token = localStorage.getItem('mma_token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+        
+        let stompClient = null;
+        let bout = null;
+        let timerState = { state: 'STOPPED', remainingSeconds: 300, displayTime: '05:00' };
+        
+        // Load bout data
+        async function loadBout() {
+            try {
+                const res = await fetch(`${API_BASE}/api/public/bouts/${boutId}`);
+                bout = await res.json();
+                
+                document.getElementById('fighter1Name').textContent = `${bout.fighter1?.firstName || '?'} ${bout.fighter1?.lastName || ''}`;
+                document.getElementById('fighter1Record').textContent = `${bout.fighter1?.recordW || 0}-${bout.fighter1?.recordL || 0}-${bout.fighter1?.recordD || 0}`;
+                document.getElementById('fighter2Name').textContent = `${bout.fighter2?.firstName || '?'} ${bout.fighter2?.lastName || ''}`;
+                document.getElementById('fighter2Record').textContent = `${bout.fighter2?.recordW || 0}-${bout.fighter2?.recordL || 0}-${bout.fighter2?.recordD || 0}`;
+                
+                document.getElementById('roundDisplay').textContent = `ROUND ${bout.currentRound || 1} / ${bout.totalRounds || 3}`;
+                
+                // Populate winner select
+                const winnerSelect = document.getElementById('winnerId');
+                winnerSelect.innerHTML = `
+                    <option value="">Empate / Sin ganador</option>
+                    <option value="${bout.fighter1?.id}">${bout.fighter1?.firstName} ${bout.fighter1?.lastName}</option>
+                    <option value="${bout.fighter2?.id}">${bout.fighter2?.firstName} ${bout.fighter2?.lastName}</option>
+                `;
+                
+                // Load current timer state
+                const timerRes = await fetch(`${API_BASE}/api/timer/${boutId}`);
+                const timer = await timerRes.json();
+                updateTimerDisplay(timer);
+                
+            } catch (error) {
+                console.error('Error loading bout:', error);
+            }
+        }
+        
+        function updateTimerDisplay(timer) {
+            timerState = timer;
+            
+            const display = document.getElementById('timerDisplay');
+            const badge = document.getElementById('stateBadge');
+            const progress = document.getElementById('progressBar');
+            
+            display.textContent = timer.displayTime || '05:00';
+            
+            // Remove all classes
+            display.className = 'timer-display';
+            badge.className = 'state-badge';
+            progress.className = 'progress-bar-fill';
+            
+            // Update based on state
+            if (timer.state === 'RUNNING') {
+                display.classList.add('running');
+                badge.classList.add('running');
+                badge.textContent = '🔴 EN VIVO';
+                
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnPause').disabled = false;
+                document.getElementById('btnPause').style.display = 'inline-block';
+                document.getElementById('btnResume').style.display = 'none';
+                document.getElementById('btnNext').disabled = true;
+                
+                // Warning colors
+                if (timer.remainingSeconds <= 10) {
+                    display.classList.remove('running');
+                    display.classList.add('critical');
+                    progress.classList.add('critical');
+                } else if (timer.remainingSeconds <= 30) {
+                    display.classList.remove('running');
+                    display.classList.add('warning');
+                    progress.classList.add('warning');
+                }
+                
+            } else if (timer.state === 'PAUSED') {
+                display.classList.add('paused');
+                badge.classList.add('paused');
+                badge.textContent = '⏸️ PAUSADO';
+                
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnPause').style.display = 'none';
+                document.getElementById('btnResume').style.display = 'inline-block';
+                document.getElementById('btnNext').disabled = false;
+                
+            } else {
+                display.classList.add('stopped');
+                badge.classList.add('stopped');
+                badge.textContent = 'DETENIDO';
+                
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnPause').disabled = true;
+                document.getElementById('btnPause').style.display = 'inline-block';
+                document.getElementById('btnResume').style.display = 'none';
+                document.getElementById('btnNext').disabled = false;
+            }
+            
+            // Update progress bar
+            const percent = timer.progressPercent || 100;
+            progress.style.width = percent + '%';
+            
+            // Update round display
+            if (timer.currentRound && timer.totalRounds) {
+                document.getElementById('roundDisplay').textContent = `ROUND ${timer.currentRound} / ${timer.totalRounds}`;
+            }
+        }
+        
+        // WebSocket connection
+        function connectWebSocket() {
+            const socket = new SockJS(`${API_BASE}/ws`);
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            
+            stompClient.connect({}, function(frame) {
+                document.getElementById('connectionDot').classList.remove('disconnected');
+                document.getElementById('connectionText').textContent = 'Conectado';
+                
+                // Subscribe to timer updates
+                stompClient.subscribe(`/topic/bout/${boutId}/timer`, function(message) {
+                    const timer = JSON.parse(message.body);
+                    updateTimerDisplay(timer);
+                });
+                
+                // Subscribe to bout updates
+                stompClient.subscribe('/topic/bouts', function(message) {
+                    const data = JSON.parse(message.body);
+                    if (data.boutId == boutId) {
+                        loadBout();
+                    }
+                });
+                
+            }, function(error) {
+                document.getElementById('connectionDot').classList.add('disconnected');
+                document.getElementById('connectionText').textContent = 'Desconectado';
+                setTimeout(connectWebSocket, 5000);
+            });
+        }
+        
+        // Control functions
+        async function startTimer() {
+            await fetch(`${API_BASE}/api/timer/${boutId}/start`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+        
+        async function pauseTimer() {
+            await fetch(`${API_BASE}/api/timer/${boutId}/pause`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+        
+        async function resumeTimer() {
+            await fetch(`${API_BASE}/api/timer/${boutId}/resume`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+        
+        async function nextRound() {
+            await fetch(`${API_BASE}/api/timer/${boutId}/next-round`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+        
+        async function resetRound() {
+            await fetch(`${API_BASE}/api/timer/${boutId}/reset`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+        
+        function showFinishModal() {
+            new bootstrap.Modal(document.getElementById('finishModal')).show();
+        }
+        
+        async function finishBout() {
+            const winnerId = document.getElementById('winnerId').value;
+            const method = document.getElementById('decisionMethod').value;
+            
+            await fetch(`${API_BASE}/api/judge/bouts/${boutId}/finish`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    winnerId: winnerId || null,
+                    decisionMethod: method
+                })
+            });
+            
+            // Stop timer
+            await fetch(`${API_BASE}/api/timer/${boutId}/stop`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            bootstrap.Modal.getInstance(document.getElementById('finishModal')).hide();
+            alert('Pelea finalizada');
+            window.location.href = '/ui/bouts.html';
+        }
+        
+        // Initialize
+        loadBout();
+        connectWebSocket();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMA Live - Gestión de Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --mma-red: #dc2626; --mma-dark: #0f0f0f; --mma-gold: #fbbf24; --mma-green: #10b981; }
+        body { background: linear-gradient(135deg, var(--mma-dark) 0%, #1a1a2e 50%, #16213e 100%); min-height: 100vh; font-family: 'Oswald', sans-serif; color: #f3f4f6; }
+        
+        .navbar { background: rgba(0,0,0,0.9) !important; border-bottom: 3px solid var(--mma-red); }
+        .navbar-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; }
+        .navbar-brand span:first-child { color: #fff; }
+        .navbar-brand span:last-child { color: var(--mma-red); }
+        .nav-link { color: #9ca3af !important; }
+        .nav-link:hover, .nav-link.active { color: var(--mma-gold) !important; }
+        
+        .main-content { padding: 2rem 0; }
+        .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; margin-bottom: 1.5rem; }
+        
+        .card { background: linear-gradient(180deg, #1f2937 0%, #111827 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; }
+        .card-title { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--mma-gold); }
+        
+        .table { color: #e5e7eb; }
+        .table thead { background: linear-gradient(90deg, var(--mma-red) 0%, #991b1b 100%); }
+        .table thead th { border: none; color: #fff; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+        .table tbody tr:hover { background: rgba(220, 38, 38, 0.1); }
+        
+        .form-control, .form-select { background: #374151; border: 1px solid #4b5563; color: #f9fafb; border-radius: 8px; }
+        .form-control:focus, .form-select:focus { background: #4b5563; border-color: var(--mma-red); color: #fff; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2); }
+        .form-label { color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn-primary { background: linear-gradient(90deg, var(--mma-red) 0%, #b91c1c 100%); border: none; font-weight: 600; }
+        .btn-primary:hover { background: linear-gradient(90deg, #ef4444 0%, var(--mma-red) 100%); }
+        
+        .badge-admin { background: var(--mma-red); }
+        .badge-judge { background: var(--mma-gold); color: #000; }
+        .badge-supervisor { background: #8b5cf6; }
+        .badge-viewer { background: #6b7280; }
+        
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-role { background: var(--mma-red); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+        .btn-logout { background: transparent; border: 1px solid #6b7280; color: #9ca3af; padding: 6px 16px; border-radius: 6px; }
+        .btn-logout:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+        
+        .status-active { color: var(--mma-green); }
+        .status-inactive { color: var(--mma-red); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><span>MMA</span><span>LIVE</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/ui/dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/fighters.html">Peleadores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/bouts.html">Peleas</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ui/users.html">Usuarios</a></li>
+                </ul>
+                <div class="user-info">
+                    <span id="userName">Admin</span>
+                    <span class="user-role" id="userRole">ADMIN</span>
+                    <button class="btn btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <h1 class="section-title">👥 Gestión de Usuarios</h1>
+            
+            <div class="row g-4">
+                <!-- Form -->
+                <div class="col-lg-4">
+                    <div class="card p-4">
+                        <h5 class="card-title mb-3" id="formTitle">Nuevo Usuario</h5>
+                        <form id="userForm">
+                            <input type="hidden" id="userId">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="username" required placeholder="nombre.usuario">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="password" placeholder="Mínimo 6 caracteres">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control" id="fullName" required placeholder="Nombre y Apellido">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="correo@ejemplo.com">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Rol</label>
+                                <select class="form-select" id="role" required>
+                                    <option value="JUDGE">Juez</option>
+                                    <option value="SUPERVISOR">Supervisor</option>
+                                    <option value="ADMIN">Administrador</option>
+                                    <option value="VIEWER">Espectador</option>
+                                </select>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">💾 Guardar</button>
+                                <button type="button" class="btn btn-outline-light d-none" id="btnCancel" onclick="resetForm()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Roles Info -->
+                    <div class="card p-4 mt-4">
+                        <h6 class="card-title mb-3">📋 Roles del Sistema</h6>
+                        <div class="small">
+                            <p><span class="badge badge-admin">ADMIN</span> Control total del sistema</p>
+                            <p><span class="badge badge-supervisor">SUPERVISOR</span> Gestión de eventos y peleas</p>
+                            <p><span class="badge badge-judge">JUDGE</span> Puntuación de peleas</p>
+                            <p><span class="badge badge-viewer">VIEWER</span> Solo visualización</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Table -->
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Listado de Usuarios</h5>
+                            <button class="btn btn-sm btn-outline-light" onclick="loadUsers()">🔄 Recargar</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Usuario</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <tr><td colspan="7" class="text-center">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        const token = localStorage.getItem('mma_token');
+        const currentUser = JSON.parse(localStorage.getItem('mma_user') || '{}');
+        
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+        
+        // Solo admins pueden acceder
+        if (currentUser.role !== 'ADMIN') {
+            alert('Acceso denegado. Solo administradores.');
+            window.location.href = '/ui/dashboard.html';
+        }
+        
+        document.getElementById('userName').textContent = currentUser.fullName || 'Admin';
+        document.getElementById('userRole').textContent = currentUser.role || 'ADMIN';
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        function getRoleBadge(role) {
+            const badges = {
+                'ADMIN': '<span class="badge badge-admin">Admin</span>',
+                'JUDGE': '<span class="badge badge-judge">Juez</span>',
+                'SUPERVISOR': '<span class="badge badge-supervisor">Supervisor</span>',
+                'VIEWER': '<span class="badge badge-viewer">Espectador</span>'
+            };
+            return badges[role] || role;
+        }
+        
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) {
+                    document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar usuarios</td></tr>';
+                    return;
+                }
+                
+                const users = await res.json();
+                
+                if (users.length === 0) {
+                    document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados</td></tr>';
+                    return;
+                }
+                
+                document.getElementById('usersTable').innerHTML = users.map(u => `
+                    <tr>
+                        <td>#${u.id}</td>
+                        <td><strong>${u.username}</strong></td>
+                        <td>${u.fullName}</td>
+                        <td>${u.email || '-'}</td>
+                        <td>${getRoleBadge(u.role)}</td>
+                        <td>${u.active ? '<span class="status-active">✅ Activo</span>' : '<span class="status-inactive">❌ Inactivo</span>'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${u.id})" ${u.id === currentUser.id ? 'disabled title="No puedes eliminarte"' : ''}>🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error de conexión</td></tr>';
+            }
+        }
+        
+        async function deleteUser(id) {
+            if (id === currentUser.id) {
+                alert('No puedes eliminarte a ti mismo');
+                return;
+            }
+            
+            if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    loadUsers();
+                } else {
+                    alert('Error al eliminar usuario');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('formTitle').textContent = 'Nuevo Usuario';
+            document.getElementById('btnCancel').classList.add('d-none');
+            document.getElementById('password').required = true;
+        }
+        
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const role = document.getElementById('role').value;
+            
+            if (!password && !document.getElementById('userId').value) {
+                alert('La contraseña es requerida para nuevos usuarios');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, fullName, email, role })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert('✅ Usuario creado correctamente');
+                    resetForm();
+                    loadUsers();
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo crear el usuario'));
+                }
+            } catch (error) {
+                alert('Error de conexión');
+                console.error(error);
+            }
+        });
+        
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+</html>
+

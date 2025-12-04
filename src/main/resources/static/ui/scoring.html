@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMA Live - Panel de Puntuación</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --mma-red: #dc2626; --mma-dark: #0f0f0f; --mma-gold: #fbbf24; --mma-green: #10b981; }
+        body { background: linear-gradient(135deg, var(--mma-dark) 0%, #1a1a2e 50%, #16213e 100%); min-height: 100vh; font-family: 'Oswald', sans-serif; color: #f3f4f6; }
+        
+        .navbar { background: rgba(0,0,0,0.9) !important; border-bottom: 3px solid var(--mma-gold); }
+        .navbar-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; }
+        .navbar-brand span:first-child { color: #fff; }
+        .navbar-brand span:last-child { color: var(--mma-red); }
+        .nav-link { color: #9ca3af !important; }
+        .nav-link:hover, .nav-link.active { color: var(--mma-gold) !important; }
+        
+        .main-content { padding: 2rem 0; }
+        .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; margin-bottom: 1.5rem; }
+        
+        .card { background: linear-gradient(180deg, #1f2937 0%, #111827 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; }
+        .card-title { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--mma-gold); }
+        
+        .bout-select-card {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .bout-select-card:hover { border-color: var(--mma-gold); transform: translateY(-3px); }
+        .bout-select-card.selected { border-color: var(--mma-green); background: rgba(16, 185, 129, 0.1); }
+        .bout-select-card.live { border-color: var(--mma-red); animation: pulse-border 1.5s infinite; }
+        
+        @keyframes pulse-border { 0%, 100% { border-color: var(--mma-red); } 50% { border-color: rgba(220,38,38,0.3); } }
+        
+        .fighter-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; }
+        .vs-badge { background: var(--mma-red); color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; }
+        .live-badge { background: var(--mma-red); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Scoring Panel */
+        .scoring-panel {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid var(--mma-gold);
+        }
+        
+        .round-indicator {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            color: var(--mma-gold);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .fighter-score-card {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .fighter-score-card.red { border-top: 4px solid var(--mma-red); }
+        .fighter-score-card.blue { border-top: 4px solid #3b82f6; }
+        
+        .score-input {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            width: 120px;
+            height: 100px;
+            text-align: center;
+            background: #374151;
+            border: 3px solid #4b5563;
+            color: #fff;
+            border-radius: 12px;
+        }
+        
+        .score-input:focus {
+            border-color: var(--mma-gold);
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
+            outline: none;
+        }
+        
+        .score-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .score-btn.plus { background: var(--mma-green); color: #fff; }
+        .score-btn.minus { background: var(--mma-red); color: #fff; }
+        .score-btn:hover { transform: scale(1.1); }
+        .score-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .btn-submit-score {
+            background: linear-gradient(90deg, var(--mma-gold) 0%, #d97706 100%);
+            border: none;
+            color: #000;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 14px 40px;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit-score:hover {
+            background: linear-gradient(90deg, #fcd34d 0%, var(--mma-gold) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+        }
+        
+        /* Scores History */
+        .scores-history {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .score-row:last-child { border-bottom: none; }
+        
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-role { background: var(--mma-gold); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+        .btn-logout { background: transparent; border: 1px solid #6b7280; color: #9ca3af; padding: 6px 16px; border-radius: 6px; }
+        .btn-logout:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><span>MMA</span><span>LIVE</span></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/ui/dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/bouts.html">Peleas</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ui/scoring.html">Puntuación</a></li>
+                </ul>
+                <div class="user-info">
+                    <span id="userName">Usuario</span>
+                    <span class="user-role" id="userRole">JUEZ</span>
+                    <button class="btn btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <h1 class="section-title">📋 Panel de Puntuación</h1>
+            
+            <div class="row g-4">
+                <!-- Bout Selection -->
+                <div class="col-lg-4">
+                    <div class="card p-4">
+                        <h5 class="card-title mb-3">Seleccionar Pelea</h5>
+                        <div id="boutsContainer">
+                            <p class="text-muted">Cargando peleas...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scoring Panel -->
+                <div class="col-lg-8">
+                    <div id="scoringContainer" style="display: none;">
+                        <div class="scoring-panel">
+                            <div class="round-indicator" id="roundIndicator">ROUND 1</div>
+                            
+                            <div class="row g-4 justify-content-center">
+                                <!-- Fighter 1 -->
+                                <div class="col-md-5">
+                                    <div class="fighter-score-card red">
+                                        <h5 class="fighter-name mb-3" id="scoreFighter1">Peleador 1</h5>
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <button class="score-btn minus" onclick="adjustScore(1, -1)">−</button>
+                                            <input type="number" class="score-input" id="score1" value="10" min="0" max="10">
+                                            <button class="score-btn plus" onclick="adjustScore(1, 1)" disabled>+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-2 d-flex align-items-center justify-content-center">
+                                    <span class="vs-badge">VS</span>
+                                </div>
+                                
+                                <!-- Fighter 2 -->
+                                <div class="col-md-5">
+                                    <div class="fighter-score-card blue">
+                                        <h5 class="fighter-name mb-3" id="scoreFighter2">Peleador 2</h5>
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <button class="score-btn minus" onclick="adjustScore(2, -1)">−</button>
+                                            <input type="number" class="score-input" id="score2" value="10" min="0" max="10">
+                                            <button class="score-btn plus" onclick="adjustScore(2, 1)" disabled>+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="mt-4">
+                                <label class="form-label text-muted">Notas (opcional)</label>
+                                <textarea class="form-control bg-dark text-light border-secondary" id="scoreNotes" rows="2" placeholder="Observaciones del round..."></textarea>
+                            </div>
+                            
+                            <!-- Submit -->
+                            <div class="text-center mt-4">
+                                <button class="btn-submit-score" onclick="submitScore()">
+                                    ✅ ENVIAR PUNTUACIÓN
+                                </button>
+                            </div>
+                            
+                            <!-- Scores History -->
+                            <div class="scores-history">
+                                <h6 class="text-muted mb-3">📊 Puntuaciones Enviadas</h6>
+                                <div id="scoresHistory">
+                                    <p class="text-muted small">No hay puntuaciones registradas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="noSelectionMsg" class="card p-5 text-center">
+                        <div style="font-size: 4rem;">📋</div>
+                        <h4 class="mt-3">Selecciona una pelea</h4>
+                        <p class="text-muted">Elige una pelea en curso para ingresar puntuaciones</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        const token = localStorage.getItem('mma_token');
+        const currentUser = JSON.parse(localStorage.getItem('mma_user') || '{}');
+        
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+        
+        document.getElementById('userName').textContent = currentUser.fullName || 'Usuario';
+        document.getElementById('userRole').textContent = currentUser.role || 'JUEZ';
+        
+        let selectedBout = null;
+        let stompClient = null;
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        async function loadBouts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/public/bouts`);
+                const bouts = await res.json();
+                
+                // Filtrar peleas en curso o programadas
+                const activeBouts = bouts.filter(b => b.state === 'EnCurso' || b.state === 'Programada' || b.state === 'Pausada');
+                
+                if (activeBouts.length === 0) {
+                    document.getElementById('boutsContainer').innerHTML = '<p class="text-muted">No hay peleas activas</p>';
+                    return;
+                }
+                
+                document.getElementById('boutsContainer').innerHTML = activeBouts.map(b => `
+                    <div class="bout-select-card ${b.state === 'EnCurso' ? 'live' : ''} ${selectedBout?.id === b.id ? 'selected' : ''}" 
+                         onclick="selectBout(${b.id})">
+                        ${b.state === 'EnCurso' ? '<span class="live-badge mb-2">🔴 EN VIVO</span>' : ''}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fighter-name">${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</div>
+                                <span class="vs-badge">VS</span>
+                                <div class="fighter-name">${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="text-muted small">Round</div>
+                                <div class="fw-bold">${b.currentRound || 1}/${b.totalRounds || 3}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading bouts:', error);
+            }
+        }
+        
+        async function selectBout(boutId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/public/bouts/${boutId}`);
+                selectedBout = await res.json();
+                
+                // Update UI
+                document.getElementById('noSelectionMsg').style.display = 'none';
+                document.getElementById('scoringContainer').style.display = 'block';
+                
+                document.getElementById('scoreFighter1').textContent = `${selectedBout.fighter1?.firstName || '?'} ${selectedBout.fighter1?.lastName || ''}`;
+                document.getElementById('scoreFighter2').textContent = `${selectedBout.fighter2?.firstName || '?'} ${selectedBout.fighter2?.lastName || ''}`;
+                document.getElementById('roundIndicator').textContent = `ROUND ${selectedBout.currentRound || 1}`;
+                
+                // Reset scores
+                document.getElementById('score1').value = 10;
+                document.getElementById('score2').value = 10;
+                document.getElementById('scoreNotes').value = '';
+                
+                // Highlight selected
+                document.querySelectorAll('.bout-select-card').forEach(card => card.classList.remove('selected'));
+                event.currentTarget.classList.add('selected');
+                
+                // Load existing scores
+                loadScores();
+                
+            } catch (error) {
+                console.error('Error selecting bout:', error);
+            }
+        }
+        
+        function adjustScore(fighter, delta) {
+            const input = document.getElementById(`score${fighter}`);
+            let value = parseInt(input.value) + delta;
+            value = Math.max(0, Math.min(10, value));
+            input.value = value;
+        }
+        
+        async function submitScore() {
+            if (!selectedBout) {
+                alert('Selecciona una pelea primero');
+                return;
+            }
+            
+            const score1 = parseInt(document.getElementById('score1').value);
+            const score2 = parseInt(document.getElementById('score2').value);
+            const notes = document.getElementById('scoreNotes').value;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/judge/bouts/${selectedBout.id}/score`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        roundNumber: selectedBout.currentRound || 1,
+                        fighter1Score: score1,
+                        fighter2Score: score2,
+                        notes: notes
+                    })
+                });
+                
+                if (res.ok) {
+                    alert('✅ Puntuación enviada correctamente');
+                    document.getElementById('scoreNotes').value = '';
+                    loadScores();
+                } else {
+                    const error = await res.json();
+                    alert('Error: ' + (error.error || 'No se pudo enviar'));
+                }
+            } catch (error) {
+                alert('Error de conexión');
+                console.error(error);
+            }
+        }
+        
+        async function loadScores() {
+            if (!selectedBout) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/judge/bouts/${selectedBout.id}/scores`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const scores = await res.json();
+                
+                if (scores.length === 0) {
+                    document.getElementById('scoresHistory').innerHTML = '<p class="text-muted small">No hay puntuaciones registradas</p>';
+                    return;
+                }
+                
+                // Group by round
+                const byRound = {};
+                scores.forEach(s => {
+                    if (!byRound[s.roundNumber]) byRound[s.roundNumber] = [];
+                    byRound[s.roundNumber].push(s);
+                });
+                
+                let html = '';
+                Object.keys(byRound).sort().forEach(round => {
+                    html += `<div class="mb-2"><strong class="text-warning">Round ${round}</strong></div>`;
+                    byRound[round].forEach(s => {
+                        html += `
+                            <div class="score-row">
+                                <span class="text-muted small">${s.judgeName || 'Juez'}</span>
+                                <span>
+                                    <span class="text-danger">${s.fighter1Score}</span> - 
+                                    <span class="text-primary">${s.fighter2Score}</span>
+                                </span>
+                            </div>
+                        `;
+                    });
+                });
+                
+                document.getElementById('scoresHistory').innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading scores:', error);
+            }
+        }
+        
+        // WebSocket for real-time updates
+        function connectWebSocket() {
+            const socket = new SockJS(`${API_BASE}/ws`);
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            
+            stompClient.connect({}, function() {
+                stompClient.subscribe('/topic/bouts', function(message) {
+                    loadBouts();
+                    if (selectedBout) {
+                        selectBout(selectedBout.id);
+                    }
+                });
+            });
+        }
+        
+        // Initialize
+        loadBouts();
+        connectWebSocket();
+        
+        // Refresh bouts periodically
+        setInterval(loadBouts, 30000);
+    </script>
+</body>
+</html>
+

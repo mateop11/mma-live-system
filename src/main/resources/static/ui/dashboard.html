@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMA Live - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mma-red: #dc2626;
+            --mma-dark: #0f0f0f;
+            --mma-gold: #fbbf24;
+            --mma-steel: #374151;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--mma-dark) 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'Oswald', sans-serif;
+            color: #f3f4f6;
+        }
+        
+        .navbar {
+            background: rgba(0,0,0,0.8) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--mma-red);
+        }
+        
+        .navbar-brand {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+        }
+        
+        .navbar-brand span:first-child { color: #fff; }
+        .navbar-brand span:last-child { color: var(--mma-red); }
+        
+        .nav-link {
+            color: #9ca3af !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--mma-gold) !important;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #f3f4f6;
+        }
+        
+        .user-role {
+            background: var(--mma-red);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .main-content {
+            padding: 2rem 0;
+        }
+        
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 3px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 100%;
+            background: var(--mma-red);
+        }
+        
+        .stat-card {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            color: var(--mma-gold);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        .action-card {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            height: 100%;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--mma-red);
+        }
+        
+        .action-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .action-card h4 {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-card p {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        
+        .btn-action {
+            background: linear-gradient(90deg, var(--mma-red) 0%, #b91c1c 100%);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-action:hover {
+            background: linear-gradient(90deg, #ef4444 0%, var(--mma-red) 100%);
+            color: #fff;
+            transform: translateX(5px);
+        }
+        
+        .btn-action.gold {
+            background: linear-gradient(90deg, var(--mma-gold) 0%, #d97706 100%);
+            color: #000;
+        }
+        
+        .btn-action.gold:hover {
+            background: linear-gradient(90deg, #fcd34d 0%, var(--mma-gold) 100%);
+            color: #000;
+        }
+        
+        .live-bout-card {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid var(--mma-red);
+            animation: pulse-border 2s infinite;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--mma-red); }
+            50% { border-color: rgba(220, 38, 38, 0.3); }
+        }
+        
+        .live-badge {
+            background: var(--mma-red);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .btn-logout {
+            background: transparent;
+            border: 1px solid #6b7280;
+            color: #9ca3af;
+            padding: 6px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .btn-logout:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: #fff;
+        }
+        
+        .admin-only { display: none; }
+        .judge-only { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <span>MMA</span><span>LIVE</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ui/dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item admin-only">
+                        <a class="nav-link" href="/ui/fighters.html">Peleadores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ui/bouts.html">Peleas</a>
+                    </li>
+                    <li class="nav-item judge-only">
+                        <a class="nav-link" href="/ui/scoring.html">Puntuación</a>
+                    </li>
+                    <li class="nav-item admin-only">
+                        <a class="nav-link" href="/ui/users.html">Usuarios</a>
+                    </li>
+                </ul>
+                <div class="user-info">
+                    <span id="userName">Usuario</span>
+                    <span class="user-role" id="userRole">ROL</span>
+                    <button class="btn btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Welcome -->
+            <div class="mb-4">
+                <h1 class="section-title" id="welcomeTitle">Bienvenido</h1>
+            </div>
+            
+            <!-- Stats -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statFighters">0</div>
+                        <div class="stat-label">Peleadores</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statBouts">0</div>
+                        <div class="stat-label">Peleas</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statLive">0</div>
+                        <div class="stat-label">En Vivo</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statScheduled">0</div>
+                        <div class="stat-label">Programadas</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Bouts -->
+            <div id="liveBoutsSection" style="display: none;">
+                <h2 class="section-title">🔴 Peleas en Vivo</h2>
+                <div class="row g-4 mb-5" id="liveBoutsContainer"></div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <h2 class="section-title">Acciones Rápidas</h2>
+            <div class="row g-4">
+                <div class="col-md-4 admin-only">
+                    <div class="action-card">
+                        <div class="icon">🥊</div>
+                        <h4>Gestionar Peleadores</h4>
+                        <p>Agregar, editar o eliminar peleadores del sistema.</p>
+                        <a href="/ui/fighters.html" class="btn-action">Ir a Peleadores →</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="action-card">
+                        <div class="icon">⚔️</div>
+                        <h4>Ver Peleas</h4>
+                        <p>Consultar y gestionar todas las peleas programadas.</p>
+                        <a href="/ui/bouts.html" class="btn-action gold">Ir a Peleas →</a>
+                    </div>
+                </div>
+                <div class="col-md-4 judge-only">
+                    <div class="action-card">
+                        <div class="icon">📋</div>
+                        <h4>Panel de Puntuación</h4>
+                        <p>Ingresar puntuaciones como juez de las peleas.</p>
+                        <a href="/ui/scoring.html" class="btn-action">Ir a Puntuación →</a>
+                    </div>
+                </div>
+                <div class="col-md-4 admin-only">
+                    <div class="action-card">
+                        <div class="icon">👥</div>
+                        <h4>Gestionar Usuarios</h4>
+                        <p>Administrar jueces, supervisores y accesos.</p>
+                        <a href="/ui/users.html" class="btn-action">Ir a Usuarios →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        let currentUser = null;
+        
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('mma_token');
+            const userStr = localStorage.getItem('mma_user');
+            
+            if (!token || !userStr) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            currentUser = JSON.parse(userStr);
+            document.getElementById('userName').textContent = currentUser.fullName;
+            document.getElementById('userRole').textContent = currentUser.role;
+            document.getElementById('welcomeTitle').textContent = `Bienvenido, ${currentUser.fullName}`;
+            
+            // Mostrar opciones según rol
+            if (currentUser.role === 'ADMIN') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.judge-only').forEach(el => el.style.display = 'block');
+            } else if (currentUser.role === 'JUDGE' || currentUser.role === 'SUPERVISOR') {
+                document.querySelectorAll('.judge-only').forEach(el => el.style.display = 'block');
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('mma_token');
+            localStorage.removeItem('mma_user');
+            window.location.href = '/login.html';
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/public/stats`);
+                const data = await response.json();
+                
+                document.getElementById('statFighters').textContent = data.totalFighters || 0;
+                document.getElementById('statBouts').textContent = data.totalBouts || 0;
+                document.getElementById('statLive').textContent = data.liveBouts || 0;
+                document.getElementById('statScheduled').textContent = data.scheduledBouts || 0;
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
+        }
+        
+        async function loadLiveBouts() {
+            try {
+                const response = await fetch(`${API_BASE}/api/public/bouts/live`);
+                const bouts = await response.json();
+                
+                const section = document.getElementById('liveBoutsSection');
+                const container = document.getElementById('liveBoutsContainer');
+                
+                if (bouts.length > 0) {
+                    section.style.display = 'block';
+                    container.innerHTML = bouts.map(bout => `
+                        <div class="col-md-6">
+                            <div class="live-bout-card">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="live-badge">🔴 EN VIVO</span>
+                                    <span class="text-muted">Round ${bout.currentRound || 1}/${bout.totalRounds || 3}</span>
+                                </div>
+                                <div class="text-center">
+                                    <h5>${bout.fighter1?.firstName || '?'} ${bout.fighter1?.lastName || ''}</h5>
+                                    <span class="text-muted">VS</span>
+                                    <h5>${bout.fighter2?.firstName || '?'} ${bout.fighter2?.lastName || ''}</h5>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="/ui/bout-live.html?id=${bout.id}" class="btn-action">Ver Pelea →</a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    section.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error cargando peleas en vivo:', error);
+            }
+        }
+        
+        // Inicializar
+        checkAuth();
+        loadStats();
+        loadLiveBouts();
+        
+        // Actualizar cada 30 segundos
+        setInterval(() => {
+            loadStats();
+            loadLiveBouts();
+        }, 30000);
+    </script>
+</body>
+</html>
+

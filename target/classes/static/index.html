@@ -1,37 +1,215 @@
-  <div class="row g-4 mt-2">
-    <div class="col-md-4">
-      <div class="card bg-body-tertiary text-dark">
-        <div class="card-body">
-          <h5 class="card-title">Gestión de peleadores</h5>
-          <p class="card-text">
-            CRUD completo de peleadores: listar, crear, editar y eliminar.
-          </p>
-          <a href="/ui/fighters.html" class="btn btn-primary">Ir a peleadores</a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMA Live - Sistema de Gestión de Peleas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --mma-red: #dc2626; --mma-dark: #0f0f0f; --mma-gold: #fbbf24; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, var(--mma-dark) 0%, #1a1a2e 50%, #16213e 100%); min-height: 100vh; font-family: 'Oswald', sans-serif; overflow-x: hidden; }
+        
+        .hero { position: relative; padding: 5rem 0; text-align: center; background: radial-gradient(ellipse at center, rgba(220, 38, 38, 0.15) 0%, transparent 70%); }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, transparent, var(--mma-red), var(--mma-gold), var(--mma-red), transparent); }
+        
+        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 6rem; letter-spacing: 10px; background: linear-gradient(180deg, #fff 0%, #9ca3af 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .logo-accent { color: var(--mma-red); -webkit-text-fill-color: var(--mma-red); }
+        .tagline { font-size: 1.3rem; color: #9ca3af; letter-spacing: 4px; text-transform: uppercase; margin: 1rem 0 2rem; }
+        
+        .live-indicator { display: inline-flex; align-items: center; gap: 8px; background: rgba(220, 38, 38, 0.2); border: 1px solid var(--mma-red); padding: 10px 24px; border-radius: 30px; font-size: 0.95rem; color: #f87171; animation: glow 2s infinite; }
+        .live-dot { width: 12px; height: 12px; background: var(--mma-red); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.3); } 50% { box-shadow: 0 0 25px rgba(220, 38, 38, 0.6); } }
+        
+        .stats-section { padding: 3rem 0; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .stat-card { text-align: center; padding: 1.5rem; }
+        .stat-number { font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; color: var(--mma-gold); line-height: 1; }
+        .stat-label { color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-top: 0.5rem; }
+        
+        .features-section { padding: 5rem 0; }
+        .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 4px; color: #f3f4f6; text-align: center; margin-bottom: 3rem; }
+        .section-title::after { content: ''; display: block; width: 80px; height: 4px; background: linear-gradient(90deg, var(--mma-red), var(--mma-gold)); margin: 1rem auto 0; }
+        
+        .feature-card { background: linear-gradient(180deg, #1f2937 0%, #111827 100%); border-radius: 20px; padding: 2.5rem; height: 100%; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; }
+        .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--mma-red), var(--mma-gold)); transform: scaleX(0); transition: transform 0.3s ease; }
+        .feature-card:hover { transform: translateY(-10px); box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-icon { font-size: 4rem; margin-bottom: 1.5rem; }
+        .feature-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; color: #f3f4f6; margin-bottom: 1rem; }
+        .feature-desc { color: #9ca3af; font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
+        
+        .btn-feature { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; transition: all 0.3s ease; }
+        .btn-login { background: linear-gradient(90deg, var(--mma-red) 0%, #b91c1c 100%); color: #fff; }
+        .btn-login:hover { background: linear-gradient(90deg, #ef4444 0%, var(--mma-red) 100%); color: #fff; transform: translateX(5px); }
+        .btn-public { background: linear-gradient(90deg, var(--mma-gold) 0%, #d97706 100%); color: #000; }
+        .btn-public:hover { background: linear-gradient(90deg, #fcd34d 0%, var(--mma-gold) 100%); color: #000; transform: translateX(5px); }
+        
+        .live-section { padding: 4rem 0; background: rgba(220, 38, 38, 0.05); border-top: 1px solid rgba(220, 38, 38, 0.2); }
+        .live-bout-card { background: linear-gradient(180deg, #1f2937 0%, #111827 100%); border-radius: 16px; padding: 2rem; border: 2px solid rgba(220, 38, 38, 0.5); text-align: center; }
+        .vs-text { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--mma-red); margin: 1rem 0; }
+        
+        .footer { padding: 3rem 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+        .footer-text { color: #6b7280; font-size: 0.9rem; }
+        .tech-stack { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+        .tech-badge { background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; color: #9ca3af; }
+        
+        .author-info { margin-top: 2rem; padding: 1.5rem; background: rgba(251, 191, 36, 0.1); border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.2); }
+        .author-info h6 { color: var(--mma-gold); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .author-info p { color: #9ca3af; margin: 0; font-size: 0.9rem; }
+    </style>
+</head>
+<body class="text-light">
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="logo">MMA<span class="logo-accent">LIVE</span></h1>
+            <p class="tagline">Sistema de Gestión de Peleas en Tiempo Real</p>
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span>SISTEMA ACTIVO</span>
+            </div>
         </div>
-      </div>
-    </div>
+    </section>
+    
+    <!-- Stats -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statFighters">0</div>
+                        <div class="stat-label">Peleadores</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statBouts">0</div>
+                        <div class="stat-label">Peleas</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statLive">0</div>
+                        <div class="stat-label">En Vivo</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statScheduled">0</div>
+                        <div class="stat-label">Programadas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Acceso al Sistema</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔐</div>
+                        <h3 class="feature-title">Panel de Control</h3>
+                        <p class="feature-desc">
+                            Accede al panel de administración para gestionar peleadores, peleas, eventos y puntuaciones. 
+                            Requiere autenticación como Admin, Juez o Supervisor.
+                        </p>
+                        <a href="/login.html" class="btn-feature btn-login">Iniciar Sesión →</a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">👁️</div>
+                        <h3 class="feature-title">Vista Pública</h3>
+                        <p class="feature-desc">
+                            Consulta información de peleadores, peleas programadas y resultados en tiempo real 
+                            sin necesidad de iniciar sesión.
+                        </p>
+                        <a href="/ui/public-view.html" class="btn-feature btn-public">Ver Peleas →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Live Bouts -->
+    <section class="live-section" id="liveSection" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">🔴 Peleas en Vivo</h2>
+            <div class="row g-4 justify-content-center" id="liveBoutsContainer"></div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">
+                MMA Live - Sistema de Gestión de Peleas de Artes Marciales Mixtas
+            </p>
+            <div class="tech-stack">
+                <span class="tech-badge">☕ Java 17</span>
+                <span class="tech-badge">🍃 Spring Boot 3.3</span>
+                <span class="tech-badge">🔐 JWT Auth</span>
+                <span class="tech-badge">🔌 WebSocket</span>
+                <span class="tech-badge">🗃️ H2 Database</span>
+            </div>
+            <div class="author-info">
+                <h6>📚 Proyecto Académico</h6>
+                <p><strong>Estudiante:</strong> Mateo Mikael Pillajo Guijarro</p>
+                <p><strong>Universidad:</strong> Universidad de las Américas</p>
+                <p><strong>Materia:</strong> Ingeniería Web</p>
+            </div>
+        </div>
+    </footer>
 
-    <div class="col-md-4">
-      <div class="card bg-body-tertiary text-dark">
-        <div class="card-body">
-          <h5 class="card-title">Gestión de peleas</h5>
-          <p class="card-text">
-            Programa peleas entre peleadores registrados y marca el ganador.
-          </p>
-          <a href="/ui/fights.html" class="btn btn-warning">Ir a peleas</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card bg-body-tertiary text-dark">
-        <div class="card-body">
-          <h5 class="card-title">Consola H2</h5>
-          <p class="card-text">
-            Para ver la base de datos en memoria mientras la app está corriendo.
-          </p>
-          <a href="/h2" class="btn btn-outline-secondary">Abrir H2</a>
-        </div>
-      </div>
-    </div>
-  </div>
+    <script>
+        const API_BASE = window.location.origin;
+        
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/public/stats`);
+                const data = await res.json();
+                document.getElementById('statFighters').textContent = data.totalFighters || 0;
+                document.getElementById('statBouts').textContent = data.totalBouts || 0;
+                document.getElementById('statLive').textContent = data.liveBouts || 0;
+                document.getElementById('statScheduled').textContent = data.scheduledBouts || 0;
+            } catch (e) { console.error(e); }
+        }
+        
+        async function loadLiveBouts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/public/bouts/live`);
+                const bouts = await res.json();
+                const section = document.getElementById('liveSection');
+                const container = document.getElementById('liveBoutsContainer');
+                
+                if (bouts.length > 0) {
+                    section.style.display = 'block';
+                    container.innerHTML = bouts.map(b => `
+                        <div class="col-md-4">
+                            <div class="live-bout-card">
+                                <div class="live-indicator mb-3">
+                                    <span class="live-dot"></span>
+                                    <span>Round ${b.currentRound || 1}/${b.totalRounds || 3}</span>
+                                </div>
+                                <h4 class="text-light">${b.fighter1?.firstName || '?'} ${b.fighter1?.lastName || ''}</h4>
+                                <div class="vs-text">VS</div>
+                                <h4 class="text-light">${b.fighter2?.firstName || '?'} ${b.fighter2?.lastName || ''}</h4>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+        
+        loadStats();
+        loadLiveBouts();
+        setInterval(loadStats, 30000);
+        setInterval(loadLiveBouts, 10000);
+    </script>
+</body>
+</html>
