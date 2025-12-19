@@ -17,7 +17,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// SOLID: DIP + OCP | Patrones: Factory, Builder
+/**
+ * Controlador de administración.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Depende de IFighterService e IBoutService (abstracciones).
+ * 
+ * Patrones utilizados:
+ * - Factory: creación de Bouts via BoutFactory (en el servicio)
+ * - Builder: DTOs construidos con FighterDTOBuilder (en el servicio)
+ */
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
@@ -79,6 +88,7 @@ public class AdminController {
 
     // ==================== BOUTS ====================
     
+    // Patrón Factory: el servicio usa BoutFactory para crear peleas
     @PostMapping("/bouts")
     public ResponseEntity<?> createBout(@RequestBody Map<String, Object> request) {
         try {

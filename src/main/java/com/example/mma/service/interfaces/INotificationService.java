@@ -2,7 +2,15 @@ package com.example.mma.service.interfaces;
 
 import java.util.Map;
 
-// SOLID: Interface Segregation Principle (ISP) + Patrón Observer
+/**
+ * Interfaz del servicio de notificaciones.
+ * 
+ * SOLID - Interface Segregation Principle (ISP):
+ * Separa las operaciones de notificación del resto del sistema.
+ * 
+ * Patrón Observer:
+ * Actúa como Subject que notifica a los clientes WebSocket (Observers).
+ */
 public interface INotificationService {
 
     void notifyBoutChange(String action, Map<String, Object> data);

@@ -13,7 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// SOLID: DIP + OCP | Patrones: Builder, Strategy
+/**
+ * Controlador para operaciones de jueces.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Depende de IBoutService (abstracción), no de implementación concreta.
+ * 
+ * SOLID - Open/Closed Principle (OCP):
+ * La lógica de negocio está en el servicio, extensible sin modificar el controller.
+ */
 @RestController
 @RequestMapping("/api/judge")
 @PreAuthorize("hasAnyRole('ADMIN', 'JUDGE', 'SUPERVISOR')")
@@ -97,6 +105,7 @@ public class JudgeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Patrón Strategy: el servicio usa ScoringStrategy para validar puntuaciones
     @PostMapping("/bouts/{boutId}/score")
     public ResponseEntity<?> submitScore(
             @PathVariable Long boutId,
@@ -153,6 +162,7 @@ public class JudgeController {
         return ResponseEntity.ok(scoreMaps);
     }
 
+    // Patrón Strategy: el cálculo se delega a la estrategia de puntuación
     @GetMapping("/bouts/{boutId}/calculate-result")
     public ResponseEntity<Map<String, Object>> calculateResult(@PathVariable Long boutId) {
         Map<String, Object> result = boutService.calculateFinalScore(boutId);

@@ -7,7 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Patrón Strategy - Sistema extendido MMA + SOLID: Liskov Substitution Principle (LSP)
+/**
+ * Estrategia de puntuación: Sistema MMA Extendido.
+ * 
+ * Patrón Strategy - Segunda implementación:
+ * Sistema con criterios adicionales y desempate por rounds dominantes.
+ * 
+ * SOLID - Liskov Substitution Principle (LSP):
+ * Puede sustituir a TenPointMustScoringStrategy sin alterar el comportamiento.
+ */
 @Component("mmaJudgingStrategy")
 public class MMAJudgingScoringStrategy implements ScoringStrategy {
 
@@ -42,6 +50,7 @@ public class MMAJudgingScoringStrategy implements ScoringStrategy {
         int fighter1DominantRounds = 0;
         int fighter2DominantRounds = 0;
 
+        // Agrupar por round para análisis
         Map<Integer, int[]> roundScores = new HashMap<>();
         for (ScoreCard sc : scoreCards) {
             roundScores.computeIfAbsent(sc.getRoundNumber(), k -> new int[]{0, 0, 0});
@@ -75,6 +84,7 @@ public class MMAJudgingScoringStrategy implements ScoringStrategy {
             winnerId = 2;
             decisionType = (fighter2Total - fighter1Total > 5) ? "DOMINANT" : "CLOSE";
         } else {
+            // Desempate por rounds ganados
             if (fighter1RoundsWon > fighter2RoundsWon) {
                 winnerId = 1;
                 decisionType = "TIEBREAKER_ROUNDS";

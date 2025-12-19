@@ -18,7 +18,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// SOLID: DIP + OCP | Patrones: Strategy, Factory, Builder
+/**
+ * Implementación del servicio de peleas.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Depende de interfaces (IFighterService, INotificationService).
+ * 
+ * SOLID - Open/Closed Principle (OCP):
+ * Usa ScoringStrategy para cálculos - extensible sin modificar.
+ * 
+ * Patrones utilizados:
+ * - Strategy: ScoringStrategy para puntuación
+ * - Factory: BoutFactory para creación
+ * - Builder: BoutDTOBuilder para DTOs
+ */
 @Service
 @Transactional
 public class BoutServiceImpl implements IBoutService {
@@ -61,6 +74,7 @@ public class BoutServiceImpl implements IBoutService {
 
     @Override
     public Bout createBout(Fighter fighter1, Fighter fighter2, Integer rounds, Long eventId) {
+        // Patrón Factory: delega la creación a BoutFactory
         Bout bout = boutFactory.createFullConfiguredBout(fighter1, fighter2, rounds, eventId, null);
         Bout saved = boutRepository.save(bout);
         notificationService.notifyBoutChange("created", boutToMap(saved));
@@ -164,6 +178,7 @@ public class BoutServiceImpl implements IBoutService {
         Bout bout = boutRepository.findById(boutId)
                 .orElseThrow(() -> new RuntimeException("Pelea no encontrada"));
         
+        // Patrón Strategy: valida usando la estrategia configurada
         if (!scoringStrategy.isValidScore(fighter1Score, fighter2Score)) {
             throw new IllegalArgumentException("Puntuación inválida según " + scoringStrategy.getSystemName());
         }
@@ -198,6 +213,7 @@ public class BoutServiceImpl implements IBoutService {
 
     @Override
     public Map<String, Object> calculateFinalScore(Long boutId) {
+        // Patrón Strategy: delega el cálculo a la estrategia
         List<ScoreCard> scores = getScores(boutId);
         return scoringStrategy.determineWinner(scores);
     }
@@ -214,6 +230,7 @@ public class BoutServiceImpl implements IBoutService {
 
     @Override
     public Map<String, Object> boutToMap(Bout bout) {
+        // Patrón Builder
         return BoutDTOBuilder.from(bout).buildStandardView().build();
     }
 

@@ -11,7 +11,15 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// Patrón Factory + SOLID: Open/Closed Principle (OCP)
+/**
+ * Factory para creación de peleas.
+ * 
+ * Patrón Factory:
+ * Centraliza la lógica de creación de objetos Bout.
+ * 
+ * SOLID - Open/Closed Principle (OCP):
+ * Abierto para añadir nuevos métodos de creación sin modificar los existentes.
+ */
 @Component
 public class BoutFactory {
 
@@ -21,6 +29,7 @@ public class BoutFactory {
         this.eventRepository = eventRepository;
     }
 
+    // Crea una pelea estándar (3 rounds por defecto)
     public Bout createStandardBout(Fighter fighter1, Fighter fighter2, Integer totalRounds) {
         Bout bout = new Bout();
         bout.setFighter1(fighter1);
@@ -32,6 +41,7 @@ public class BoutFactory {
         return bout;
     }
 
+    // Crea una pelea de campeonato (5 rounds)
     public Bout createChampionshipBout(Fighter fighter1, Fighter fighter2, Long eventId) {
         Bout bout = createStandardBout(fighter1, fighter2, 5);
         if (eventId != null) {
@@ -41,10 +51,12 @@ public class BoutFactory {
         return bout;
     }
 
+    // Crea una pelea de exhibición
     public Bout createExhibitionBout(Fighter fighter1, Fighter fighter2, Integer rounds) {
         return createStandardBout(fighter1, fighter2, rounds != null ? rounds : 3);
     }
 
+    // Crea una pelea con configuración completa
     public Bout createFullConfiguredBout(Fighter fighter1, Fighter fighter2, 
                                           Integer totalRounds, Long eventId, 
                                           List<User> judges) {
@@ -62,6 +74,7 @@ public class BoutFactory {
         return bout;
     }
 
+    // Crea una pelea con horario específico
     public Bout createScheduledBout(Fighter fighter1, Fighter fighter2, 
                                      Integer totalRounds, LocalDateTime scheduledTime) {
         Bout bout = createStandardBout(fighter1, fighter2, totalRounds);

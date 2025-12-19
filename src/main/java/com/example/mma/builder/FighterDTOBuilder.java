@@ -5,7 +5,12 @@ import com.example.mma.entity.Fighter;
 import com.example.mma.enums.FighterStatus;
 import com.example.mma.enums.WeightCategory;
 
-// Patrón Builder
+/**
+ * Builder para construir DTOs de peleadores.
+ * 
+ * Patrón Builder:
+ * Construcción fluida de objetos FighterDTO con validación.
+ */
 public class FighterDTOBuilder {
 
     private Long id;

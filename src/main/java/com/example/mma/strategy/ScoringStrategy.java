@@ -4,7 +4,15 @@ import com.example.mma.entity.ScoreCard;
 import java.util.List;
 import java.util.Map;
 
-// Patrón Strategy + SOLID: Open/Closed Principle (OCP)
+/**
+ * Interfaz para estrategias de puntuación.
+ * 
+ * Patrón Strategy:
+ * Define una familia de algoritmos intercambiables para calcular puntuaciones.
+ * 
+ * SOLID - Open/Closed Principle (OCP):
+ * Abierto para extensión (nuevas estrategias), cerrado para modificación.
+ */
 public interface ScoringStrategy {
 
     int calculateTotalScore(List<ScoreCard> scoreCards, int fighterNumber);

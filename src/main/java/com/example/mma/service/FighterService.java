@@ -15,7 +15,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// SOLID: DIP + OCP | Patrón: Builder
+/**
+ * Implementación del servicio de peleadores.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Implementa IFighterService, los controllers dependen de la interfaz.
+ * 
+ * Patrón Builder:
+ * Usa FighterDTOBuilder para crear DTOs.
+ */
 @Service
 @Transactional
 public class FighterService implements IFighterService {
@@ -47,6 +55,7 @@ public class FighterService implements IFighterService {
 
     @Override
     public FighterDTO create(FighterDTO dto) {
+        // Patrón Builder: construcción fluida
         Fighter fighter = FighterDTOBuilder.create()
                 .withName(dto.getFirstName(), dto.getLastName())
                 .withClub(dto.getClub())

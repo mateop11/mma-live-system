@@ -7,7 +7,15 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-// SOLID: DIP + Patrón Observer
+/**
+ * Implementación del servicio de notificaciones.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Implementa INotificationService, permitiendo cambiar el mecanismo de notificación.
+ * 
+ * Patrón Observer:
+ * Los clientes WebSocket reciben actualizaciones automáticamente.
+ */
 @Service
 public class NotificationServiceImpl implements INotificationService {
 

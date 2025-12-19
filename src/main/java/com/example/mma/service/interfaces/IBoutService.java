@@ -9,7 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// SOLID: Dependency Inversion Principle (DIP) + Interface Segregation Principle (ISP)
+/**
+ * Interfaz del servicio de peleas.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Los módulos de alto nivel dependen de esta abstracción.
+ * 
+ * SOLID - Interface Segregation Principle (ISP):
+ * Métodos agrupados por responsabilidad (CRUD, control, puntuación).
+ */
 public interface IBoutService {
 
     // CRUD

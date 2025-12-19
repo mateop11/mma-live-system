@@ -8,7 +8,12 @@ import com.example.mma.enums.WeightCategory;
 import java.util.List;
 import java.util.Optional;
 
-// SOLID: Dependency Inversion Principle (DIP) - Los controllers dependen de esta abstracción
+/**
+ * Interfaz del servicio de peleadores.
+ * 
+ * SOLID - Dependency Inversion Principle (DIP):
+ * Los controllers dependen de esta abstracción, no de la implementación concreta.
+ */
 public interface IFighterService {
 
     List<FighterDTO> findAll();

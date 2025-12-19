@@ -7,7 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Patrón Strategy - Sistema 10-Point Must (estándar MMA/Boxing)
+/**
+ * Estrategia de puntuación: Sistema 10-Point Must.
+ * 
+ * Patrón Strategy - Implementación concreta:
+ * Sistema estándar de MMA/Boxing donde el ganador del round recibe 10 puntos.
+ * 
+ * SOLID - Open/Closed Principle (OCP):
+ * Nueva estrategia añadida sin modificar código existente.
+ */
 @Component("tenPointMustStrategy")
 public class TenPointMustScoringStrategy implements ScoringStrategy {
 
@@ -34,7 +42,7 @@ public class TenPointMustScoringStrategy implements ScoringStrategy {
         int fighter1Total = calculateTotalScore(scoreCards, 1);
         int fighter2Total = calculateTotalScore(scoreCards, 2);
 
-        // Agrupar por juez
+        // Agrupar por juez para determinar tipo de decisión
         Map<Long, int[]> scoresByJudge = new HashMap<>();
         for (ScoreCard sc : scoreCards) {
             Long judgeId = sc.getJudge().getId();

@@ -9,7 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// Patrón Builder + SOLID: Interface Segregation Principle (ISP)
+/**
+ * Builder para construir DTOs de peleas.
+ * 
+ * Patrón Builder:
+ * Permite construir objetos Map complejos de forma fluida (method chaining).
+ * 
+ * SOLID - Interface Segregation Principle (ISP):
+ * Permite construir solo los datos necesarios (básico, estándar, detallado).
+ */
 public class BoutDTOBuilder {
 
     private final Map<String, Object> boutMap;
@@ -82,14 +90,17 @@ public class BoutDTOBuilder {
         return this;
     }
 
+    // Vista básica: info + peleadores
     public BoutDTOBuilder buildBasicView() {
         return this.withBasicInfo().withFighters();
     }
 
+    // Vista estándar: básico + ganador + decisión
     public BoutDTOBuilder buildStandardView() {
         return this.withBasicInfo().withFighters().withWinner().withDecision();
     }
 
+    // Vista detallada: todos los datos
     public BoutDTOBuilder buildDetailView() {
         return this.withBasicInfo()
                    .withFighters()
