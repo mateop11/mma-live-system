@@ -15,37 +15,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * =============================================================================
- * SERVICIO DE PELEADORES - IMPLEMENTACIÓN
- * =============================================================================
- * 
- * PRINCIPIO SOLID: DEPENDENCY INVERSION PRINCIPLE (DIP)
- * - Esta clase implementa IFighterService (abstracción)
- * - Los controllers y otros servicios dependen de la interfaz
- * - Facilita el testing con mocks y el cambio de implementación
- * 
- * PRINCIPIO SOLID: OPEN/CLOSED PRINCIPLE (OCP)
- * - El código está abierto para extensión mediante herencia
- * - Cerrado para modificación: nuevas funcionalidades se añaden
- *   sin cambiar los métodos existentes
- * 
- * PATRÓN DE DISEÑO: BUILDER PATTERN
- * - Usa FighterDTOBuilder para crear DTOs de forma fluida
- * 
- * @author MMA Live System
- * @version 2.0 - Refactorizado con principios SOLID
- */
+// SOLID: DIP + OCP | Patrón: Builder
 @Service
 @Transactional
 public class FighterService implements IFighterService {
 
     private final FighterRepository fighterRepository;
 
-    /**
-     * Constructor con inyección de dependencias.
-     * DIP: El repositorio es inyectado, no creado internamente.
-     */
     @Autowired
     public FighterService(FighterRepository fighterRepository) {
         this.fighterRepository = fighterRepository;
@@ -69,17 +45,8 @@ public class FighterService implements IFighterService {
         return fighterRepository.findById(id);
     }
 
-    /**
-     * Crea un nuevo peleador usando el Builder Pattern.
-     * 
-     * BUILDER PATTERN en acción:
-     * - FighterDTOBuilder permite construir el DTO de forma fluida
-     * - Valida los datos durante la construcción
-     * - Código más legible y mantenible
-     */
     @Override
     public FighterDTO create(FighterDTO dto) {
-        // Builder Pattern: Construcción fluida de la entidad
         Fighter fighter = FighterDTOBuilder.create()
                 .withName(dto.getFirstName(), dto.getLastName())
                 .withClub(dto.getClub())
@@ -89,44 +56,21 @@ public class FighterService implements IFighterService {
                 .buildEntity();
 
         Fighter saved = fighterRepository.save(fighter);
-        
-        // Builder Pattern: Construcción del DTO de respuesta
         return FighterDTOBuilder.from(saved).build();
     }
 
-    /**
-     * Actualiza un peleador existente.
-     * Solo modifica los campos proporcionados (actualización parcial).
-     */
     @Override
     public Optional<FighterDTO> update(Long id, FighterDTO dto) {
         return fighterRepository.findById(id).map(fighter -> {
-            if (dto.getFirstName() != null) {
-                fighter.setFirstName(dto.getFirstName());
-            }
-            if (dto.getLastName() != null) {
-                fighter.setLastName(dto.getLastName());
-            }
-            if (dto.getClub() != null) {
-                fighter.setClub(dto.getClub());
-            }
-            if (dto.getCategoryWeight() != null) {
-                fighter.setCategoryWeight(WeightCategory.valueOf(dto.getCategoryWeight()));
-            }
-            if (dto.getStatus() != null) {
-                fighter.setStatus(FighterStatus.valueOf(dto.getStatus()));
-            }
-            if (dto.getRecordW() != null) {
-                fighter.setRecordW(dto.getRecordW());
-            }
-            if (dto.getRecordL() != null) {
-                fighter.setRecordL(dto.getRecordL());
-            }
-            if (dto.getRecordD() != null) {
-                fighter.setRecordD(dto.getRecordD());
-            }
+            if (dto.getFirstName() != null) fighter.setFirstName(dto.getFirstName());
+            if (dto.getLastName() != null) fighter.setLastName(dto.getLastName());
+            if (dto.getClub() != null) fighter.setClub(dto.getClub());
+            if (dto.getCategoryWeight() != null) fighter.setCategoryWeight(WeightCategory.valueOf(dto.getCategoryWeight()));
+            if (dto.getStatus() != null) fighter.setStatus(FighterStatus.valueOf(dto.getStatus()));
+            if (dto.getRecordW() != null) fighter.setRecordW(dto.getRecordW());
+            if (dto.getRecordL() != null) fighter.setRecordL(dto.getRecordL());
+            if (dto.getRecordD() != null) fighter.setRecordD(dto.getRecordD());
             Fighter saved = fighterRepository.save(fighter);
-            // Builder Pattern: Crear DTO de respuesta
             return FighterDTOBuilder.from(saved).build();
         });
     }
@@ -190,4 +134,3 @@ public class FighterService implements IFighterService {
         });
     }
 }
-
