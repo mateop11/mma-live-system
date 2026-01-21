@@ -56,15 +56,12 @@ public class AdminController {
 
     @PostMapping("/fighters")
     public ResponseEntity<FighterDTO> createFighter(@RequestBody FighterDTO dto) {
-        Fighter fighter = new Fighter();
-        fighter.setFirstName(dto.getFirstName());
-        fighter.setLastName(dto.getLastName());
-        fighter.setClub(dto.getClub());
-        fighter.setCategoryWeight(WeightCategory.valueOf(dto.getCategoryWeight()));
-        fighter.setStatus(dto.getStatus() != null ? FighterStatus.valueOf(dto.getStatus()) : FighterStatus.Active);
-        fighter.setRecordW(dto.getRecordW() != null ? dto.getRecordW() : 0);
-        fighter.setRecordL(dto.getRecordL() != null ? dto.getRecordL() : 0);
-        fighter.setRecordD(dto.getRecordD() != null ? dto.getRecordD() : 0);
+        // Usar toEntity() que maneja tanto campos de backend como frontend
+        Fighter fighter = dto.toEntity();
+        
+        // Asegurar valores por defecto
+        if (fighter.getStatus() == null) fighter.setStatus(FighterStatus.Active);
+        if (fighter.getCategoryWeight() == null) fighter.setCategoryWeight(WeightCategory.LIGHTWEIGHT);
         
         Fighter saved = fighterRepository.save(fighter);
         return ResponseEntity.ok(new FighterDTO(saved));
@@ -73,16 +70,57 @@ public class AdminController {
     @PutMapping("/fighters/{id}")
     public ResponseEntity<FighterDTO> updateFighter(@PathVariable Long id, @RequestBody FighterDTO dto) {
         return fighterRepository.findById(id)
-                .map(fighter -> {
-                    if (dto.getFirstName() != null) fighter.setFirstName(dto.getFirstName());
-                    if (dto.getLastName() != null) fighter.setLastName(dto.getLastName());
-                    if (dto.getClub() != null) fighter.setClub(dto.getClub());
-                    if (dto.getCategoryWeight() != null) fighter.setCategoryWeight(WeightCategory.valueOf(dto.getCategoryWeight()));
-                    if (dto.getStatus() != null) fighter.setStatus(FighterStatus.valueOf(dto.getStatus()));
-                    Fighter saved = fighterRepository.save(fighter);
+                .map(existingFighter -> {
+                    // Manejar nombre (frontend usa "name", backend usa "firstName"/"lastName")
+                    if (dto.getName() != null && !dto.getName().isEmpty()) {
+                        String[] parts = dto.getName().trim().split("\\s+", 2);
+                        existingFighter.setFirstName(parts[0]);
+                        existingFighter.setLastName(parts.length > 1 ? parts[1] : "");
+                    } else {
+                        if (dto.getFirstName() != null) existingFighter.setFirstName(dto.getFirstName());
+                        if (dto.getLastName() != null) existingFighter.setLastName(dto.getLastName());
+                    }
+                    
+                    // Manejar peso (frontend usa "weight", backend usa "categoryWeight")
+                    if (dto.getWeight() != null) {
+                        existingFighter.setCategoryWeight(weightToCategory(dto.getWeight()));
+                    } else if (dto.getCategoryWeight() != null) {
+                        existingFighter.setCategoryWeight(WeightCategory.valueOf(dto.getCategoryWeight()));
+                    }
+                    
+                    // Otros campos
+                    if (dto.getClub() != null) existingFighter.setClub(dto.getClub());
+                    if (dto.getStyle() != null) existingFighter.setStyle(dto.getStyle());
+                    if (dto.getCountry() != null) existingFighter.setCountry(dto.getCountry());
+                    if (dto.getStatus() != null) existingFighter.setStatus(FighterStatus.valueOf(dto.getStatus()));
+                    
+                    // Manejar record (frontend usa wins/losses/draws)
+                    if (dto.getWins() != null) existingFighter.setRecordW(dto.getWins());
+                    else if (dto.getRecordW() != null) existingFighter.setRecordW(dto.getRecordW());
+                    if (dto.getLosses() != null) existingFighter.setRecordL(dto.getLosses());
+                    else if (dto.getRecordL() != null) existingFighter.setRecordL(dto.getRecordL());
+                    if (dto.getDraws() != null) existingFighter.setRecordD(dto.getDraws());
+                    else if (dto.getRecordD() != null) existingFighter.setRecordD(dto.getRecordD());
+                    
+                    Fighter saved = fighterRepository.save(existingFighter);
                     return ResponseEntity.ok(new FighterDTO(saved));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // Helper para convertir peso a categoría
+    private WeightCategory weightToCategory(Integer weight) {
+        if (weight == null) return WeightCategory.LIGHTWEIGHT;
+        if (weight <= 52) return WeightCategory.STRAWWEIGHT;
+        if (weight <= 57) return WeightCategory.FLYWEIGHT;
+        if (weight <= 61) return WeightCategory.BANTAMWEIGHT;
+        if (weight <= 66) return WeightCategory.FEATHERWEIGHT;
+        if (weight <= 70) return WeightCategory.LIGHTWEIGHT;
+        if (weight <= 77) return WeightCategory.WELTERWEIGHT;
+        if (weight <= 84) return WeightCategory.MIDDLEWEIGHT;
+        if (weight <= 93) return WeightCategory.LIGHT_HEAVYWEIGHT;
+        if (weight <= 120) return WeightCategory.HEAVYWEIGHT;
+        return WeightCategory.SUPER_HEAVYWEIGHT;
     }
 
     @DeleteMapping("/fighters/{id}")
